@@ -22,9 +22,9 @@ class CheckRbac
     public function handle($request, Closure $next)
     {
         $currentRoute = Route::getCurrentRoute();
-        $admin = AdminRepository::getLoginAdmin($request);
+        $adminId = AdminRepository::getLoginAdmin($request)->get('id');
         //备注后面使用缓存
-        $rules = AdminRepository::getAdminRules($admin->get('id'), true);
+        $rules = AdminRepository::getAdminRules($adminId, true);
 
         $checkStr = $request->method()."|".$currentRoute->uri;
         if (!in_array($checkStr, $rules)) {

@@ -23,7 +23,7 @@ class RuleSeeder extends Seeder
             ,['id' => 4, 'pid' => 0, 'title' => "角色管理", 'rule' => null, 'is_check' => 0, 'is_log' => 0, 'sort' => 100, 'created_at' => $now]
             ,['id' => 5, 'pid' => 0, 'title' => "权限管理", 'rule' => null, 'is_check' => 0, 'is_log' => 0, 'sort' => 100, 'created_at' => $now]
             ,['id' => 6, 'pid' => 1, 'title' => "查询", 'rule' => "GET|api/admin/system/config", 'is_check' => 1, 'is_log' => 0, 'sort' => 100, 'created_at' => $now]
-            ,['id' => 7, 'pid' => 1, 'title' => "更新", 'rule' => "POST|api/admin/system/config", 'is_check' => 1, 'is_log' => 1, 'sort' => 100, 'created_at' => $now]
+            ,['id' => 7, 'pid' => 1, 'title' => "更新", 'rule' => "PATCH|api/admin/system/config", 'is_check' => 1, 'is_log' => 1, 'sort' => 100, 'created_at' => $now]
             ,['id' => 8, 'pid' => 2, 'title' => "日志列表", 'rule' => "GET|api/admin/adminLog", 'is_check' => 1, 'is_log' => 0, 'sort' => 100, 'created_at' => $now]
             ,['id' => 9, 'pid' => 3, 'title' => "列表", 'rule' => "GET|api/admin/admin", 'is_check' => 1, 'is_log' => 0, 'sort' => 100, 'created_at' => $now]
             ,['id' => 10, 'pid' => 3, 'title' => "更新", 'rule' => "PATCH|api/admin/admin/{id}", 'is_check' => 1, 'is_log' => 1, 'sort' => 100, 'created_at' => $now]

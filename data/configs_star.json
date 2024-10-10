@@ -1,0 +1,6 @@
+{
+    "save_admin_log_days": {
+        "remark": "管理员日志保存天数（0为永久保存）",
+        "value": 0
+    }
+}

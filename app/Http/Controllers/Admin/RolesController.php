@@ -44,7 +44,7 @@ class RolesController extends Controller
     {
         $val = Role::query()->find($id);
         if($val == null){
-            return responseError(["msg" => "角色不存在"], HttpCode::INTERNAL_SERVER_ERROR);
+            return responseError(["msg" => "角色不存在"]);
         }
         return responseSuccess($val);
     }
@@ -90,7 +90,7 @@ class RolesController extends Controller
 
         $role = Role::query()->find($id);
         if($role == null){
-            return responseError(["msg" => "角色不存在"], HttpCode::INTERNAL_SERVER_ERROR);
+            return responseError(["msg" => "角色不存在"]);
         }
 
         $res = Role::updateData($role, $params);
@@ -111,6 +111,10 @@ class RolesController extends Controller
         $role = Role::query()->find($id);
         if($role == null){
             return responseError(["msg" => "角色不存在"]);
+        }
+
+        if($id == 1){
+            return responseError(["msg" => "不允许删除超级管理员"]);
         }
 
         //验证角色所属管理员

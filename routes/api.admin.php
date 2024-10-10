@@ -15,6 +15,7 @@ Route::prefix('admin')->namespace("App\Http\Controllers\Admin")->group(function 
             //系统管理
             Route::prefix('system')->group(function (){
                 Route::get('config', 'SystemsController@config'); //获取系统设置
+                Route::patch('config', 'SystemsController@updateConfig'); //获取系统设置
             });
 
             //管理员日志

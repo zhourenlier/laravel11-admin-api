@@ -82,7 +82,7 @@ class AdminsController extends Controller
 
         $res = Admin::createAdmin($params);
         if (!$res){
-            return responseError(["msg" => "创建失败"], HttpCode::INTERNAL_SERVER_ERROR);
+            return responseError(["msg" => "创建失败"]);
         }
         return responseSuccess();
     }
@@ -97,10 +97,6 @@ class AdminsController extends Controller
         $adminId = $request->attributes->get('login_admin_id');
         if($adminId == $id){
             return responseError(["msg" => "不允许删除自己"]);
-        }
-
-        if($id == 1){
-            return responseError(["msg" => "不允许删除超级管理员"]);
         }
 
         $admin = Admin::query()->find($id);
@@ -141,7 +137,7 @@ class AdminsController extends Controller
 
         $admin = Admin::query()->find($id);
         if($admin == null){
-            return responseError(["msg" => "管理员不存在"], HttpCode::INTERNAL_SERVER_ERROR);
+            return responseError(["msg" => "管理员不存在"]);
         }
 
         $res = Admin::updateAdmin($params, $admin);
