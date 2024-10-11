@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
@@ -24,7 +25,7 @@ class CheckRbac
         $currentRoute = Route::getCurrentRoute();
         $adminId = AdminRepository::getLoginAdmin($request)->get('id');
         //备注后面使用缓存
-        $rules = AdminRepository::getAdminRules($adminId, true);
+        $rules = AdminRepository::getAdminRules(intval($adminId), true);
 
         $checkStr = $request->method()."|".$currentRoute->uri;
         if (!in_array($checkStr, $rules)) {

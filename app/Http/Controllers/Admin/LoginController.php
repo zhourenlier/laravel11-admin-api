@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
@@ -15,6 +16,10 @@ use Illuminate\Support\Facades\Cache;
  */
 class LoginController extends Controller
 {
+    public function __construct(
+        protected readonly AdminRepository $adminRepository
+    ){
+    }
 
     /**
      * 登录
@@ -32,7 +37,7 @@ class LoginController extends Controller
             return responseError(['msg'=>$message], HttpCode::WRONG_REQUEST);
         }
 
-        $token = AdminRepository::auth($request);
+        $token = $this->adminRepository->auth($request);
         return responseSuccess($token["data"]);
     }
 
@@ -43,7 +48,6 @@ class LoginController extends Controller
      */
     public function logOut(Request $request)
     {
-
         $token = empty($request->get('token')) ? $request->header('Authorization') : $request->get('token');
         Cache::forget(AdminRepository::TOKEN_CACHE_KEY.md5($token));
 

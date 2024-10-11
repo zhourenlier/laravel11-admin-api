@@ -1,15 +1,14 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
-use App\Common\Enum\AdminCode;
 use App\Common\Enum\HttpCode;
 use App\Models\Rule;
 use App\Repository\AdminRepository;
 use App\Repository\RuleRepository;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
 
 /**
  * 权限
@@ -18,13 +17,19 @@ use Illuminate\Support\Facades\Validator;
  */
 class RulesController extends Controller
 {
+    public function __construct(
+        protected readonly RuleRepository $ruleRepository,
+        protected readonly Rule $ruleModel
+    ){
+    }
+
     /**
      * 权限列表
      * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
      */
     public function all()
     {
-        $rules = RuleRepository::getRules();
+        $rules = $this->ruleRepository->getRules();
         return responseSuccess($rules);
     }
 
@@ -47,7 +52,7 @@ class RulesController extends Controller
             return responseError(['msg' => $message], HttpCode::WRONG_REQUEST);
         }
 
-        $res = Rule::createData($params);
+        $res = $this->ruleModel->createData($params);
         if (!$res){
             return responseError(["msg" => "创建异常"]);
         }
@@ -59,12 +64,12 @@ class RulesController extends Controller
     }
 
     /**
-     * 更新
+     * @param int $id
      * @param Request $request
-     * @param Rule $rule
      * @return \Illuminate\Http\JsonResponse
+     * @throws \App\Exceptions\AdminException
      */
-    public function update(Request $request, int $id)
+    public function update(int $id, Request $request)
     {
         $params = $request->all();
         if ($message = $this->validateParams($params, [
@@ -78,12 +83,12 @@ class RulesController extends Controller
             return responseError(['msg' => $message], HttpCode::WRONG_REQUEST);
         }
 
-        $val = Rule::query()->find($id);
-        if($val == null){
+        $data = $this->ruleModel->firstById($id);
+        if($data == null){
             return responseError(["msg" => "权限不存在"]);
         }
 
-        $res = Rule::updateData($val, $params);
+        $res = $this->ruleModel->updateData($data, $params);
         if (!$res){
             return responseError(["msg" => "更新异常"]);
         }
@@ -94,20 +99,25 @@ class RulesController extends Controller
         return responseSuccess();
     }
 
-
-    public function destroy(Request $request, int $id)
+    /**
+     * @param int $id
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \App\Exceptions\AdminException
+     */
+    public function destroy(int $id, Request $request)
     {
-        $val = Rule::query()->find($id);
-        if($val == null){
+        $data = $this->ruleModel->firstById($id);
+        if($data == null){
             return responseError(["msg" => "权限不存在"]);
         }
 
-        $count = Rule::query()->where('pid', $id)->count();
+        $count = $this->ruleModel->getChildrenCount($id);
         if ($count > 0){
             return responseError(["msg" => "该权限下面有子级，不能删除"]);
         }
 
-        Rule::deleteData($val);
+        $this->ruleModel->deleteData($data);
 
         $adminId = AdminRepository::getLoginAdmin($request)->get("id");
         AdminRepository::cleanAdminCache($adminId);

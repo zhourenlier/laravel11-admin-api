@@ -1,16 +1,15 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
-use App\Common\Enum\AdminCode;
 use App\Common\Enum\HttpCode;
 use App\Models\Role;
+use App\Models\RoleRule;
 use App\Models\Rule;
 use App\Repository\AdminRepository;
-use App\Repository\RoleService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
 
 /**
  * 角色
@@ -19,6 +18,13 @@ use Illuminate\Support\Facades\Validator;
  */
 class RolesController extends Controller
 {
+    public function __construct(
+        protected readonly Role $roleModel,
+        protected readonly RoleRule $roleRuleModel,
+        protected readonly Rule $ruleModel,
+    ){
+    }
+
     /**
      * 列表
      * @param Request $request
@@ -26,12 +32,9 @@ class RolesController extends Controller
      */
     public function lists(Request $request)
     {
-        $per_page = $request->input('per_page',10);
-        $datas = Role::query()
-            ->orderBy('id', 'desc')
-            ->paginate($per_page);
-
-        return responseSuccess($datas);
+        $per_page = intval($request->input('per_page',10));
+        $data = $this->roleModel->paginateQuery($per_page);
+        return responseSuccess($data);
     }
 
     /**
@@ -42,11 +45,11 @@ class RolesController extends Controller
      */
     public function info(int $id)
     {
-        $val = Role::query()->find($id);
-        if($val == null){
+        $data = $this->roleModel->firstById($id);
+        if($data == null){
             return responseError(["msg" => "角色不存在"]);
         }
-        return responseSuccess($val);
+        return responseSuccess($data);
     }
 
 
@@ -65,7 +68,7 @@ class RolesController extends Controller
             return responseError(['msg' => $message], HttpCode::WRONG_REQUEST);
         }
 
-        $res = Role::createData($params);
+        $res = $this->roleModel->createData($params);
         if (!$res){
             return responseError(["msg" => "创建角色失败"]);
         }
@@ -73,13 +76,12 @@ class RolesController extends Controller
     }
 
     /**
-     * 更新
-     * @param Request $request
      * @param int $id
-     * @return mixed
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      * @throws \App\Exceptions\AdminException
      */
-    public function update(Request $request, int $id)
+    public function update(int $id, Request $request)
     {
         $params = $request->all();
         if ($message = $this->validateParams($params, [
@@ -88,12 +90,12 @@ class RolesController extends Controller
             return responseError(['msg' => $message], HttpCode::WRONG_REQUEST);
         }
 
-        $role = Role::query()->find($id);
+        $role = $this->roleModel->firstById($id);
         if($role == null){
             return responseError(["msg" => "角色不存在"]);
         }
 
-        $res = Role::updateData($role, $params);
+        $res = $this->roleModel->updateData($role, $params);
         if (!$res){
             return responseError(["msg" => "更新角色失败"]);
         }
@@ -101,14 +103,14 @@ class RolesController extends Controller
     }
 
     /**
-     * 删除
      * @param int $id
-     * @return mixed
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      * @throws \Exception
      */
-    public function destroy($request, int $id)
+    public function destroy(int $id, Request $request)
     {
-        $role = Role::query()->find($id);
+        $role = $this->roleModel->firstById($id);
         if($role == null){
             return responseError(["msg" => "角色不存在"]);
         }
@@ -122,7 +124,7 @@ class RolesController extends Controller
             return responseError(["msg" => "该角色存在授权管理员"]);
         }
 
-        Role::deleteData($role);
+        $this->roleModel->deleteData($role);
 
         //清除当前用户缓存
         $adminId = AdminRepository::getLoginAdmin($request)->get("id");
@@ -147,20 +149,17 @@ class RolesController extends Controller
             return responseError(['msg' => $message], HttpCode::WRONG_REQUEST);
         }
 
-        $role = Role::query()->find($id);
+        $role = $this->roleModel->firstById($id);
         if($role == null){
             return responseError(["msg" => "角色不存在"]);
         }
 
         $rules = explode(",", $params["rules"]);
         if(count($rules) > 0){
-            $rules = Rule::query()->whereIn("id", $rules)->select("id")->pluck("id")->toArray();
+            $rules = $this->ruleModel->excludeRuleId($rules);
         }
 
-        $result = $role->rules()->sync($rules);
-        if (!$result){
-            return responseError(["msg" => "权限更新失败"]);
-        }
+        $this->roleRuleModel->roleRuleSync($role, $rules);
 
         //清除当前用户缓存
         $adminId = AdminRepository::getLoginAdmin($request)->get("id");

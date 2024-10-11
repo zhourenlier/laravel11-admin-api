@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('admins', function (Blueprint $table) {
             $table->engine = 'MyISAM';
+            $table->comment("管理员");
             $table->id();
             $table->string('username', 40)->comment("用户名");
             $table->string('password', 100)->comment("密码");
             $table->string('mobile', 20)->comment("手机号")->nullable(true);
             $table->string('email', 50)->comment("邮箱")->nullable(true);
-            $table->string('remember_token', 100)->comment("记住token");
+            $table->string('remember_token', 100)->comment("记住token")->default("");
             $table->tinyInteger('status')->comment("状态")->default(0);
             $table->timestamps();
 
@@ -28,6 +29,7 @@ return new class extends Migration
 
         Schema::create('admin_logs', function (Blueprint $table) {
             $table->engine = 'MyISAM';
+            $table->comment("管理员日志");
             $table->id();
             $table->bigInteger('admin_id')->comment("管理员ID")->default(0);
             $table->tinyInteger('type')->comment("类型")->default(0);
@@ -44,6 +46,7 @@ return new class extends Migration
 
         Schema::create('roles', function (Blueprint $table) {
             $table->engine = 'MyISAM';
+            $table->comment("管理员角色");
             $table->id();
             $table->string('name', 100)->comment("角色名");
             $table->timestamps();
@@ -53,6 +56,7 @@ return new class extends Migration
 
         Schema::create('rules', function (Blueprint $table) {
             $table->engine = 'MyISAM';
+            $table->comment("权限规则");
             $table->id();
             $table->integer('pid')->comment("父级ID")->default(0);
             $table->string('title', 60)->comment("标题");
@@ -67,6 +71,7 @@ return new class extends Migration
 
         Schema::create('role_rules', function (Blueprint $table) {
             $table->engine = 'InnoDB';
+            $table->comment("角色权限");
             $table->integer('role_id')->comment("角色ID")->default(0);
             $table->integer('rule_id')->comment("权限ID")->default(0);
             $table->timestamps();
@@ -76,6 +81,7 @@ return new class extends Migration
 
         Schema::create('admin_roles', function (Blueprint $table) {
             $table->engine = 'MyISAM';
+            $table->comment("管理员角色");
             $table->id();
             $table->integer('admin_id')->comment("管理员ID")->default(0);
             $table->integer('role_id')->comment("角色ID")->default(0);
@@ -84,8 +90,9 @@ return new class extends Migration
             $table->unique(["admin_id", "role_id"], "uni_ar");
         });
 
-        Schema::create('configs', function (Blueprint $table) {
+        Schema::create('system_configs', function (Blueprint $table) {
             $table->engine = 'MyISAM';
+            $table->comment("系统配置");
             $table->string('key')->comment("key");
             $table->string('value', 2000)->comment("配置值");
             $table->unique("key", "uni_key");
@@ -103,5 +110,6 @@ return new class extends Migration
         Schema::dropIfExists('rules');
         Schema::dropIfExists('role_rules');
         Schema::dropIfExists('admin_roles');
+        Schema::dropIfExists('system_configs');
     }
 };

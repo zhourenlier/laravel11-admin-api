@@ -36,7 +36,7 @@ class RuleSeeder extends Seeder
             ,['id' => 17, 'pid' => 4, 'title' => "创建", 'rule' => "POST|api/admin/role", 'is_check' => 1, 'is_log' => 1, 'sort' => 100, 'created_at' => $now]
             ,['id' => 18, 'pid' => 4, 'title' => "删除", 'rule' => "DELETE|api/admin/role/{id}", 'is_check' => 1, 'is_log' => 1, 'sort' => 100, 'created_at' => $now]
             ,['id' => 19, 'pid' => 4, 'title' => "设置角色权限", 'rule' => 'POST|api/admin/role/{id}/rule', 'is_check' => 1, 'is_log' => 1, 'sort' => 100, 'created_at' => $now]
-            ,['id' => 20, 'pid' => 4, 'title' => "全部权限", 'rule' => "GET|api/admin/role/all", 'is_check' => 1, 'is_log' => 0, 'sort' => 100, 'created_at' => $now]
+            ,['id' => 20, 'pid' => 4, 'title' => "全部权限", 'rule' => "GET|api/admin/rule/all", 'is_check' => 1, 'is_log' => 0, 'sort' => 100, 'created_at' => $now]
             ,['id' => 21, 'pid' => 4, 'title' => "更新", 'rule' => "PATCH|api/admin/rule/{id}", 'is_check' => 1, 'is_log' => 1, 'sort' => 100, 'created_at' => $now]
             ,['id' => 22, 'pid' => 4, 'title' => "详情", 'rule' => "GET|api/admin/rule/{id}", 'is_check' => 1, 'is_log' => 0, 'sort' => 100, 'created_at' => $now]
             ,['id' => 23, 'pid' => 4, 'title' => "创建", 'rule' => "POST|api/admin/rule", 'is_check' => 1, 'is_log' => 1, 'sort' => 100, 'created_at' => $now]

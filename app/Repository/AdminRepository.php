@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Repository;
 
@@ -13,6 +14,13 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminRepository
 {
+
+    public function __construct(
+        protected readonly Admin $adminModel
+    ){
+
+    }
+
     const TOKEN_CACHE_KEY = 'admin_token_';
     const RULE_CACHE_KEY = 'admin_rules_';
     const MENU_CACHE_KEY = 'admin_menu_';
@@ -24,7 +32,7 @@ class AdminRepository
      * @return \Arrar|array
      * @throws AdminException
      */
-    public static function auth($request)
+    public function auth($request)
     {
         $username = $request->username;
         $password = $request->password;
@@ -32,22 +40,21 @@ class AdminRepository
         $error = '用户名或密码错误';
         $error2 = '该用户未启用';
 
-        $admin = Admin::where('username', $username)->first();
-        if (Admin::NOT_ACTIVE === $admin->status)
-            throw new AdminException($error2);
-
+        $admin = $this->adminModel->firstByFeild('username', $username);
         if (null === $admin)
             throw new AdminException($error);
+
+        if (Admin::NOT_ACTIVE === $admin->status)
+            throw new AdminException($error2);
 
         $res = password_verify($password, $admin->password);
         if ($res === false)
             throw new AdminException($error);
 
-
         //生成token
         $token = Hash::make(now().$admin->id.getRandomString(60));
-        $admin->remember_token = $token;
-        $admin->save();
+        //记住token
+        $this->adminModel->updateAdmin($admin, ["remember_token" => $token]);
 
         //缓存
         Cache::put(self::TOKEN_CACHE_KEY.md5($token), $admin->id, 3600 * 4);
@@ -64,7 +71,7 @@ class AdminRepository
     /**
      * 获取管理员权限
      * @param int $adminId
-     * @param bool $isNew
+     * @param $isNew
      * @return mixed
      */
     public static function getAdminRules(int $adminId, $isNew = false)

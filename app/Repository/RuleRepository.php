@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Repository;
 
@@ -12,26 +13,28 @@ class RuleRepository
 
     const LOG_RULES_CACHE_KEY = 'admin_save_log_rules';
 
+    public function __construct(
+        protected readonly Rule $ruleModel
+    ){
+    }
+
     /**
      * 获取规则
      * @return array
      */
-    public static function getRules()
+    public function getRules()
     {
-        $rules = Rule::query()
-            ->orderBy('sort', 'asc')
-            ->get();
-        return self::tree($rules);
+        $rules = $this->ruleModel->getAllOrderBySort();
+        return $this->tree($rules);
     }
 
     /**
      * 树形结构
-     * @param $data
-     * @param int $pid
-     * @param int $lvl
+     * @param $rules
+     * @param $pid
      * @return array
      */
-    public static function tree(&$rules, $pid = 0)
+    private function tree(&$rules, $pid = 0)
     {
         $arr = [];
         foreach ($rules as $k => $v) {

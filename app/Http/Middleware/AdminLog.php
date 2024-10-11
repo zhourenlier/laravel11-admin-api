@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
@@ -25,7 +26,7 @@ class AdminLog
 
         $checkStr = $request->method()."|".$currentRoute->uri;
         if (!in_array($checkStr, $admin_need_logs)) {
-            $adminId = $request->attributes->get('login_admin_id');
+            $adminId = intval($request->attributes->get('login_admin_id'));
             AdminLogRepository::createAdminLog($request,\App\Models\AdminLog::TYPE_BEHAVIOR, $adminId);
         }
 

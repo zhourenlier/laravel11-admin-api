@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
@@ -17,12 +18,30 @@ class Admin extends BaseModel
     const PWD_COST = 12;
 
     /**
+     * 查询分页
+     * @param array $params
+     * @param int $per_page
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function paginateQuery(array $params, int $per_page)
+    {
+        return self::query()
+            ->with('roles')
+            ->when(!empty($params["username"]), function ($query) use ($params){
+                $query->where('username', 'like', '%' . $params["username"] . '%');
+            })
+            ->orderBy('id', 'desc')
+            ->paginate($per_page);
+    }
+
+
+    /**
      * 创建管理员
-     * @param array $data
+     * @param array $params
      * @return bool
      * @throws AdminException
      */
-    public static function createAdmin(array $params) : bool
+    public function createAdmin(array $params) : bool
     {
         $data = [
             'username' => $params['username'],
@@ -47,21 +66,20 @@ class Admin extends BaseModel
         }
 
         $admin = self::query()->create($data);
-        if ($admin->is) {
+        if($params['role_id'] > 0){
             $admin->roles()->sync($params['role_id']);
-            return true;
         }
-        return false;
+        return true;
     }
 
     /**
      * 更新管理员
-     * @param array $data
      * @param Admin $admin
+     * @param array $params
      * @return bool
      * @throws AdminException
      */
-    public static function updateAdmin(array $params, Admin $admin) : bool
+    public function updateAdmin(Admin $admin, array $params) : bool
     {
         $data = [];
         if (!empty($params['username']) && $params['username'] != $admin->username) {
@@ -88,6 +106,9 @@ class Admin extends BaseModel
         }
         if (array_key_exists("status", $params) && $params["status"] != "") {
             $data["status"] = $params['status'];
+        }
+        if (!empty($params['remember_token'])) {
+            $data["remember_token"] = $params['remember_token'];
         }
 
         //校验组是否存在
@@ -118,9 +139,10 @@ class Admin extends BaseModel
 
     /**
      * 删除
-     * @return string
+     * @param Admin $admin
+     * @return void
      */
-    public static function deleteData(Admin $admin)
+    public function deleteData(Admin $admin)
     {
         $admin->roles()->detach();
         $admin->delete();

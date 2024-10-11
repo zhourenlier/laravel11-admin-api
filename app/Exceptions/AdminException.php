@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Exceptions;
 
@@ -9,7 +10,7 @@ use Exception;
 
 class AdminException extends Exception
 {
-    public function __construct(string $msg, $key = "")
+    public function __construct(string $msg, string $key = "")
     {
         $newCode = new AdminCode($key != "" ? $key : CommonCode::ERROR_CODE, $msg);
         $this->code = $newCode->getCode();

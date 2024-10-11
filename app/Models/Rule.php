@@ -1,9 +1,11 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
 use App\Exceptions\AdminException;
 use App\Repository\AdminRepository;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 
 class Rule extends BaseModel
@@ -19,12 +21,43 @@ class Rule extends BaseModel
     const DEFAULT_SORT = 100;
 
     /**
-     * 创建
+     * @param array $ids
+     * @return mixed[]
+     */
+    public function excludeRuleId(array $ids)
+    {
+        return self::query()
+            ->whereIn("id", $ids)
+            ->select("id")
+            ->pluck("id")
+            ->toArray();
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllOrderBySort()
+    {
+        return self::query()
+            ->orderBy('sort', 'asc')
+            ->get();
+    }
+
+    /**
+     * @param int $pid
+     * @return int
+     */
+    public function getChildrenCount(int $pid)
+    {
+        return self::query()->where('pid', $pid)->count();
+    }
+
+    /**
      * @param $params
      * @return bool
      * @throws AdminException
      */
-    public static function createData($params)
+    public function createData($params)
     {
         try {
             $data = [
@@ -35,15 +68,11 @@ class Rule extends BaseModel
                 'is_log' => $params['is_log']??self::UNSAVE_LOG,
                 'is_check' => $params['is_check']??self::CHECK_NO,
             ];
-            $result = self::query()->create($data);
-            if($result){
-                return true;
-            }
+            return self::query()->insert($data);
         } catch (\Exception $exception) {
             Log::info('创建权限异常:'.$exception->getMessage());
             throw new AdminException('创建权限异常:'.$exception->getMessage());
         }
-        return false;
     }
 
     /**
@@ -53,7 +82,7 @@ class Rule extends BaseModel
      * @return bool
      * @throws AdminException
      */
-    public static function updateData(Rule $rule, $params)
+    public function updateData(Rule $rule, $params)
     {
         if (array_key_exists("pid", $params)) {
             $rule->pid = $params['pid'] ?? 0;
@@ -86,7 +115,7 @@ class Rule extends BaseModel
      * 删除
      * @return string
      */
-    public static function deleteData(Rule $rule)
+    public function deleteData(Rule $rule)
     {
         $rule->roles()->detach();
         $res = $rule->delete();

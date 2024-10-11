@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Events;
 
@@ -19,11 +20,12 @@ class AdminLoginEvent
     public $admin_id;
 
     /**
-     * Create a new event instance.
-     *
-     * @return void
+     * AdminLoginEvent constructor.
+     * @param int $type
+     * @param int $admin_id
+     * @param array $data
      */
-    public function __construct($type ,$admin_id ,$data)
+    public function __construct(int $type ,int $admin_id ,array $data)
     {
         $this->admin_id = $admin_id;
         $this->type = $type;

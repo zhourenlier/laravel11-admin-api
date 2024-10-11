@@ -1,8 +1,10 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
 use App\Exceptions\AdminException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
 
 class Role extends BaseModel
@@ -10,39 +12,49 @@ class Role extends BaseModel
     protected $guarded = ['id'];
 
     /**
-     * 创建
-     * @return string
+     * 查询分页
+     * @param int $per_page
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public static function createData($params)
+    public function paginateQuery(int $per_page)
     {
-        $name = $params['name']??'';
+        return self::query()
+            ->orderBy('id', 'desc')
+            ->paginate($per_page);
+    }
+
+    /**
+     * @param $params
+     * @return bool
+     * @throws AdminException
+     */
+    public function createData($params)
+    {
+        $name = $params['name'];
         if(self::isUnique('name',$name)){
             throw new AdminException("该角色已存在");
         }
 
         try {
-            $result = self::query()->create([
+            return self::query()->insert([
                 'name' => $name,
             ]);
-            if($result){
-                return true;
-            }
         } catch (\Exception $exception) {
             Log::info('创建角色异常:'.$exception->getMessage());
             throw new AdminException('创建角色异常:'.$exception->getMessage());
         }
-        return false;
     }
 
 
     /**
-     * 更新
-     * @return string
+     * @param Role $role
+     * @param $params
+     * @return bool
+     * @throws AdminException
      */
-    public static function updateData(Role $role, $params)
+    public function updateData(Role $role, $params)
     {
-        $name = $params['name']??'';
-
+        $name = $params['name'];
         $isExists = self::query()
             ->where('name', $name)
             ->where('id', '<>', $role->id)
@@ -61,10 +73,10 @@ class Role extends BaseModel
     }
 
     /**
-     * 删除
-     * @return string
+     * @param Role $role
+     * @return void
      */
-    public static function deleteData(Role $role)
+    public function deleteData(Role $role)
     {
         $role->admins()->detach();
         $role->rules()->detach();

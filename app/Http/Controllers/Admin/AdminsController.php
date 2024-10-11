@@ -1,16 +1,14 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
 use App\Common\Enum\HttpCode;
 use App\Exceptions\AdminException;
-use App\Models\Role;
 use App\Models\Admin;
 use App\Repository\AdminRepository;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Validator;
-use function Termwind\ValueObjects\pr;
 
 /**
  * 管理员
@@ -19,6 +17,11 @@ use function Termwind\ValueObjects\pr;
  */
 class AdminsController extends Controller
 {
+    public function __construct(
+        protected readonly Admin $adminModel
+    ){
+    }
+
     /**
      * 管理员列表
      * @param Request $request
@@ -27,17 +30,12 @@ class AdminsController extends Controller
     public function lists(Request $request)
     {
         $name = $request->input('name', "");
-        $per_page = $request->input('per_page',10);
+        $per_page = intval($request->input('per_page',10));
 
-        $datas = Admin::query()
-            ->with('roles')
-            ->when(!empty($name), function ($query) use ($name){
-                $query->where('username', 'like', $name . '%');
-            })
-            ->orderBy('id', 'desc')
-            ->paginate($per_page);
-
-        return responseSuccess($datas);
+        $data = $this->adminModel->paginateQuery([
+            "username" => $name
+        ], $per_page);
+        return responseSuccess($data);
     }
 
     /**
@@ -48,7 +46,7 @@ class AdminsController extends Controller
      */
     public function info(int $id)
     {
-        $admin = Admin::query()->find($id);
+        $admin = $this->adminModel->firstById($id);
         if($admin == null){
             return responseError(["msg" => "管理员不存在"]);
         }
@@ -80,7 +78,7 @@ class AdminsController extends Controller
             return responseError(['msg' => $message], HttpCode::WRONG_REQUEST);
         }
 
-        $res = Admin::createAdmin($params);
+        $res = $this->adminModel->createAdmin($params);
         if (!$res){
             return responseError(["msg" => "创建失败"]);
         }
@@ -88,23 +86,24 @@ class AdminsController extends Controller
     }
 
     /**
-     * 删除管理员
-     * @param $id
-     * @return mixed
+     * @param int $id
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Exception
      */
-    public function destroy(Request $request, int $id)
+    public function destroy(int $id, Request $request)
     {
         $adminId = $request->attributes->get('login_admin_id');
         if($adminId == $id){
             return responseError(["msg" => "不允许删除自己"]);
         }
 
-        $admin = Admin::query()->find($id);
+        $admin = $this->adminModel->firstById($id);
         if($admin == null){
             return responseError(["msg" => "管理员不存在"]);
         }
 
-        Admin::deleteData($admin);
+        $this->adminModel->deleteData($admin);
 
         //清除当前用户缓存
         AdminRepository::cleanAdminCache($id);
@@ -135,12 +134,12 @@ class AdminsController extends Controller
             return responseError(['msg' => $message], HttpCode::WRONG_REQUEST);
         }
 
-        $admin = Admin::query()->find($id);
+        $admin = $this->adminModel->firstById($id);
         if($admin == null){
             return responseError(["msg" => "管理员不存在"]);
         }
 
-        $res = Admin::updateAdmin($params, $admin);
+        $res = $this->adminModel->updateAdmin($admin, $params);
         if (!$res){
             return responseError(["msg" => "更新失败"]);
         }

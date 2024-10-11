@@ -15,10 +15,10 @@ class Controller extends BaseController
     /**
      * 验证表单规则
      * @param array $params
-     * @param $rules
-     * @param $messages
-     * @return string|null
-     * */
+     * @param array $rules
+     * @param array $messages
+     * @return mixed|null
+     */
     protected function validateParams(array $params, array $rules, array $messages)
     {
         $validator = Validator::make($params, $rules, $messages);

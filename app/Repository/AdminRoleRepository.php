@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Repository;
 
@@ -11,16 +12,20 @@ class AdminRoleRepository
 {
     const ADMIN_ROLE_CACHE_KEY = 'admin_role_';
 
+    public function __construct(
+        protected readonly AdminRole $adminRoleModel
+    ){
+
+    }
+
     /**
      * @param $adminId
      * @return mixed
      */
-    public static function getAdminRole($adminId)
+    public function getAdminRole($adminId)
     {
         return Cache::remember(self::ADMIN_ROLE_CACHE_KEY . $adminId, 3600, function () use ($adminId) {
-            return AdminRole::query()
-                ->where('admin_id', $adminId)
-                ->first();
+            return $this->adminRoleModel->firstByFeild('admin_id', $adminId);
         });
     }
 }

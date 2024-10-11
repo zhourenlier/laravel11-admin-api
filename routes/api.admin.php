@@ -6,7 +6,6 @@ Route::prefix('admin')->namespace("App\Http\Controllers\Admin")->group(function 
     Route::post('signIn', 'LoginController@signIn');//登录
 
     Route::middleware(['admin.auth'])->group(function () {
-        Route::post('cache', 'SystemsController@flushCache');//刷新缓存
         Route::delete('cache', 'SystemsController@cleanCache');//清理缓存
         Route::get('logout', 'LoginController@logout');//退出系统
 
@@ -14,7 +13,7 @@ Route::prefix('admin')->namespace("App\Http\Controllers\Admin")->group(function 
         Route::middleware(['admin.rbac', 'admin.log'])->group(function () {
             //系统管理
             Route::prefix('system')->group(function (){
-                Route::get('config', 'SystemsController@config'); //获取系统设置
+                Route::get('config', 'SystemsController@getConfig'); //获取系统设置
                 Route::patch('config', 'SystemsController@updateConfig'); //获取系统设置
             });
 
